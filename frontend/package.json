@@ -1,0 +1,46 @@
+{
+    "name": "devinsight-frontend",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "dependencies": {
+        "@monaco-editor/react": "^4.6.0",
+        "@reduxjs/toolkit": "^2.0.1",
+        "axios": "^1.6.2",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-hot-toast": "^2.4.1",
+        "react-icons": "^4.12.0",
+        "react-query": "^3.39.3",
+        "react-redux": "^9.0.4",
+        "react-router-dom": "^6.21.0",
+        "recharts": "^2.10.3",
+        "socket.io-client": "^4.6.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.45",
+        "@types/react-dom": "^18.2.18",
+        "@types/react-router-dom": "^5.3.3",
+        "autoprefixer": "^10.4.16",
+        "postcss": "^8.4.32",
+        "react-scripts": "5.0.1",
+        "tailwindcss": "^3.4.0",
+        "typescript": "4.9.5"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}

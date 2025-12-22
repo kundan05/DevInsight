@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  bio       String?
+  avatar    String?
+  githubUrl String?
+  linkedinUrl String?
+  // role      UserRole @default(USER) // SQLite doesn't support enums
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  snippets  Snippet[]
+  comments  Comment[]
+  likes     Like[]
+  challengeSubmissions ChallengeSubmission[]
+  achievements UserAchievement[]
+  refreshTokens RefreshToken[]
+}
+
+model Snippet {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  language    String
+  code        String
+  isPublic    Boolean  @default(true)
+  isTemplate  Boolean  @default(false)
+  // tags        String[] // SQLite doesn't support arrays
+  tags        String   @default("[]") // Stored as JSON string
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  likes       Like[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  snippetId String
+  snippet   Snippet  @relation(fields: [snippetId], references: [id])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  snippetId String
+  snippet   Snippet  @relation(fields: [snippetId], references: [id])
+
+  @@unique([userId, snippetId])
+}
+
+model Challenge {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  // difficulty  Difficulty // SQLite doesn't support enums
+  difficulty  String
+  category    String
+  starterCode String?
+  // testCases   Json // SQLite doesn't support Json
+  testCases   String // Stored as JSON string
+  solution    String?
+  points      Int      @default(10)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  // tags        String[] // SQLite doesn't support arrays
+  tags        String   @default("[]") // Stored as JSON string
+
+  submissions ChallengeSubmission[]
+}
+
+model ChallengeSubmission {
+  id            String   @id @default(uuid())
+  code          String
+  language      String
+  // status        SubmissionStatus @default(PENDING) // SQLite doesn't support enums
+  status        String   @default("PENDING")
+  executionTime Int?
+  memoryUsed    Int?
+  testsPassed   Int              @default(0)
+  totalTests    Int
+  score         Int              @default(0)
+  feedback      String? // Stored as JSON string
+  submittedAt   DateTime         @default(now())
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  challengeId   String
+  challenge     Challenge @relation(fields: [challengeId], references: [id])
+}
+
+model Collaboration {
+  id        String   @id @default(uuid())
+  roomId    String   @unique
+  code      String
+  language  String
+  activeUsers Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  icon        String
+  condition   String // JSON logic or description of condition
+  createdAt   DateTime @default(now())
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  unlockedAt    DateTime    @default(now())
+  
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+}

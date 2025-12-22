@@ -45,11 +45,11 @@ graph TD
 
 | Login Page | Dashboard |
 |:---:|:---:|
-| ![Login Page](/home/kundan/.gemini/antigravity/brain/64e95784-ae5d-4ca4-8217-75a3db246157/login_page_1766389750004.png) | ![Dashboard](/home/kundan/.gemini/antigravity/brain/64e95784-ae5d-4ca4-8217-75a3db246157/dashboard_page_1766389766309.png) |
+| ![Login Page](./assets/login_page_1766389750004.png) | ![Dashboard](./assets/dashboard_page_1766389766309.png) |
 
 | Challenges List | Challenge Detail |
 |:---:|:---:|
-| ![Challenges](/home/kundan/.gemini/antigravity/brain/64e95784-ae5d-4ca4-8217-75a3db246157/challenges_page_1766389778823.png) | ![Challenge Detail](/home/kundan/.gemini/antigravity/brain/64e95784-ae5d-4ca4-8217-75a3db246157/challenge_detail_page_1766389814915.png) |
+| ![Challenges](./assets/challenges_page_1766389778823.png) | ![Challenge Detail](./assets/challenge_detail_page_1766389814915.png) |
 
 ## 🏁 Getting Started
 

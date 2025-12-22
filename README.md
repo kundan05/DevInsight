@@ -1,8 +1,6 @@
 # DevInsight
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Status](https://img.shields.io/badge/status-active-success.svg)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+
 
 **DevInsight** is a real-time developer collaboration platform designed to streamline code sharing, pair programming, and skill assessment. It features a modern, responsive interface and robust backend to support seamless developer interactions.
 
@@ -70,7 +68,6 @@ graph TD
     ```bash
     cd backend
     cp .env.example .env
-    # Update .env with your database credentials
     npm install
     npx prisma migrate dev
     npm run seed
@@ -87,6 +84,4 @@ graph TD
 4.  **Visit the app**
     Open `http://localhost:3000` to view it in the browser.
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.

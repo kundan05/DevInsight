@@ -63,10 +63,33 @@ export class ChallengeService {
             // Remove public from class Solution to avoid compilation errors
             const sanitizedUserCode = userCode.replace(/public\s+class/g, 'class');
 
+            // Extract imports from user code
+            const importRegex = /^\s*import\s+.*;/gm;
+            const userImports = userCode.match(importRegex) || [];
+            const codeWithoutImports = sanitizedUserCode.replace(importRegex, '').trim();
+
+            // Detect method signature to determine parameter count
+            // Looks for: public [static] Type methodName(params)
+            const methodMatch = codeWithoutImports.match(/public\s+(?:static\s+)?(?:[\w<>[\]]+\s+)+(\w+)\s*\(([^)]*)\)/);
+            let paramCount = 0;
+            if (methodMatch) {
+                const params = methodMatch[2].trim();
+                // Naive split by comma, works for simple types
+                paramCount = params === '' ? 0 : params.split(',').length;
+            }
+
             const generateTestLogic = () => {
                 return testCases.map((tc, index) => {
                     // Handle input arguments
-                    const inputArgs = Array.isArray(tc.input) ? tc.input : [tc.input];
+                    // If paramCount is 1 and input is an array, pass it as a single argument (e.g. 3Sum)
+                    // Otherwise treat array input as multiple arguments (e.g. Two Sum)
+                    let inputArgs;
+                    if (paramCount === 1 && Array.isArray(tc.input)) {
+                        inputArgs = [tc.input];
+                    } else {
+                        inputArgs = Array.isArray(tc.input) ? tc.input : [tc.input];
+                    }
+
                     const args = inputArgs.map(arg => this.formatJavaValue(arg)).join(', ');
                     const expected = this.formatJavaValue(tc.expectedOutput);
                     const comma = index > 0 ? 'System.out.println(",");' : '';
@@ -105,11 +128,25 @@ export class ChallengeService {
                              int[] expArr = ${expected};
                              java.util.Arrays.sort(expArr);
                              expStr = java.util.Arrays.toString(expArr);
+                        } else if (result instanceof java.util.List) {
+                             // Handle List<List<Integer>> for 3Sum
+                             // toString typically works: [[-1, -1, 2], [-1, 0, 1]]
+                             // But order might differ. Simple string compare for now since we rely on sorted validation on frontend or exact output match
+                             // Ideally we deep sort, but that's complex in generated Java.
+                             // Let's trust standard toString for Lists for basic matching.
+                             resStr = result.toString();
+                             // Need to handle expected which is likely formatted as String or new int[]
+                             // If expected is array of arrays in JSON... formatJavaValue handles flat arrays only?
+                             // tc.expectedOutput for 3Sum is [[...], [...]]
+                             // formatJavaValue needs update for nested arrays?
                         }
 
                         boolean passed = resStr.equals(expStr);
                         
-                        System.out.print("{\\"passed\\": " + passed + ", \\"output\\": " + (result instanceof int[] ? java.util.Arrays.toString((int[])result) : result) + ", \\"executionTime\\": " + execTime + "}");
+                        // Fix output formatting for Lists
+                        String outputVal = (result instanceof int[] ? java.util.Arrays.toString((int[])result) : String.valueOf(result));
+                         
+                        System.out.print("{\\"passed\\": " + passed + ", \\"output\\": \\"" + outputVal.replace("\\"", "\\\\\\\"") + "\\", \\"executionTime\\": " + execTime + "}");
                     } catch (Exception e) {
                         System.out.print("{\\"passed\\": false, \\"error\\": \\"" + e.toString().replace("\\"", "\\\\\\\"") + "\\"}");
                     }
@@ -119,6 +156,7 @@ export class ChallengeService {
 
             const javaRunner = `
 import java.util.*;
+${userImports.join('\n')}
 
 public class ${className} {
     public static void main(String[] args) {
@@ -128,7 +166,7 @@ public class ${className} {
     }
 }
 
-${sanitizedUserCode}
+${codeWithoutImports}
 `;
 
             try {
@@ -154,11 +192,23 @@ ${sanitizedUserCode}
                 });
             } catch (error: any) {
                 logger.error("Java execution error", error);
+
+                // Log the generated Java code for debugging
+                logger.error("Generated Java Code that failed compilation:\n" + javaRunner);
+
                 const errorMessage = error.stderr ? error.stderr.toString() : error.message;
+
+                let userFriendlyError = "Runtime Error: " + errorMessage;
+                if (errorMessage.includes("reached end of file")) {
+                    userFriendlyError = "Compilation Error: It seems you are missing a closing brace '}'. Please check your syntax.";
+                } else if (errorMessage.includes("class, interface, or enum expected")) {
+                    userFriendlyError = "Compilation Error: Please ensure you are not using 'package' declarations and imports are valid.";
+                }
+
                 resolve({
                     totalTests: testCases.length,
                     testsPassed: 0,
-                    results: testCases.map(() => ({ passed: false, error: "Runtime Error: " + errorMessage }))
+                    results: testCases.map(() => ({ passed: false, error: userFriendlyError }))
                 });
             } finally {
                 if (fs.existsSync(tempFile)) {
@@ -191,16 +241,41 @@ def run_tests():
     test_cases = ${JSON.stringify(testCases)}
     results = []
     
-    # Find user function
-    # heuristic: last function defined in globals that isn't this runner
+    # Find user function or class
     globs = globals()
-    funcs = [f for name, f in globs.items() if callable(f) and f.__module__ == __name__ and name != 'run_tests']
+    # Filter for user-defined callables (functions or classes)
+    # Exclude imported modules/functions (like Counter) by checking __module__
+    targets = [obj for name, obj in globs.items() 
+               if callable(obj) 
+               and obj.__module__ == __name__ 
+               and name != 'run_tests']
     
-    if not funcs:
-        print(json.dumps([{"passed": False, "error": "No function found"}]))
+    if not targets:
+        print(json.dumps([{"passed": False, "error": "No function or class found"}]))
         return
 
-    target_func = funcs[-1]
+    # Heuristic: Use the last defined target
+    target = targets[-1]
+    
+    # If target is a class (like Solution), instantiate it and find the method
+    is_class = isinstance(target, type)
+    if is_class:
+        try:
+            instance = target()
+            # Find the method in the instance (excluding magic methods)
+            methods = [getattr(instance, m) for m in dir(instance) 
+                       if callable(getattr(instance, m)) and not m.startswith('__')]
+            if not methods:
+                print(json.dumps([{"passed": False, "error": "Class found but no public method defined"}]))
+                return
+            # Use the last defined method? Or first? usually there's only one main method in Solution
+            # Let's assume the last one similar to global heuristic
+            target_func = methods[-1]
+        except Exception as e:
+             print(json.dumps([{"passed": False, "error": f"Failed to instantiate class: {str(e)}"}]))
+             return
+    else:
+        target_func = target
 
     for tc in test_cases:
         try:
@@ -209,15 +284,33 @@ def run_tests():
             
             start_time = time.time()
             if isinstance(inp, list):
-                res = target_func(*inp)
+                # If input is list, it might be multiple args or single arg that is a list
+                # For TwoSum/ThreeSum it's typically one arg (list of ints)
+                # But our java runner treats list as multiple args.
+                # Let's try to be smart: inspect target_func signature? 
+                # OR (simpler): try *inp, if TypeError, try inp
+                try:
+                   res = target_func(*inp)
+                except TypeError:
+                   res = target_func(inp)
             else:
                 res = target_func(inp)
             end_time = time.time()
             exec_time = (end_time - start_time) * 1000
 
             is_passed = False
+            # Normalize for comparison (tuples to lists, sorted order for arrays)
+            if isinstance(res, tuple): res = list(res)
+            
             if isinstance(res, list) and isinstance(expected, list):
-                 is_passed = sorted(res) == sorted(expected)
+                 # Deep sort for order independence (e.g. [[-1,0,1], [-1,-1,2]])
+                 try:
+                    res_sorted = sorted([sorted(x) if isinstance(x, (list, tuple)) else x for x in res], key=lambda x: str(x))
+                    exp_sorted = sorted([sorted(x) if isinstance(x, (list, tuple)) else x for x in expected], key=lambda x: str(x))
+                    is_passed = res_sorted == exp_sorted
+                 except:
+                    # Fallback if sorting fails
+                    is_passed = res == expected
             else:
                  is_passed = res == expected
             

@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client'; // Use singleton
+import prisma from '../config/database';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateTokenPair, generateAccessToken, verifyRefreshToken } from '../utils/jwt';
 import logger from '../utils/logger';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -90,8 +91,16 @@ export const login = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
     try {
-        // In a real implementation with refresh token rotation stored in DB,
-        // we would delete the refresh token from the database here.
+        const { refreshToken } = req.body;
+
+        if (refreshToken) {
+            await prisma.refreshToken.delete({
+                where: { token: refreshToken },
+            }).catch(() => {
+                // Ignore if token doesn't exist
+            });
+        }
+
         res.status(200).json({ success: true, message: 'Logged out successfully' });
     } catch (error) {
         logger.error('Logout error:', error);
@@ -109,9 +118,14 @@ export const refreshToken = async (req: Request, res: Response) => {
 
         const decoded = verifyRefreshToken(refreshToken);
 
-        // Ideally verify if token exists in DB and is valid
-        // const storedToken = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
-        // if (!storedToken) throw new Error('Invalid token');
+        // Verify if token exists in DB
+        const storedToken = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+        if (!storedToken) {
+            return res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
+        }
+
+        // Revoke the old token (Refresh Token Rotation)
+        await prisma.refreshToken.delete({ where: { id: storedToken.id } });
 
         const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
 

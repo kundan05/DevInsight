@@ -128,5 +128,9 @@ class DevInsightServer {
     }
 }
 
-const app = new DevInsightServer();
-app.listen();
+export const serverInstance = new DevInsightServer();
+export const app = serverInstance.app;
+
+if (require.main === module) {
+    serverInstance.listen();
+}

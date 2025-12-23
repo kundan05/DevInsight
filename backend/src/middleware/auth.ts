@@ -11,7 +11,9 @@ declare global {
     }
 }
 
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+import prisma from '../config/database';
+
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
 
@@ -21,6 +23,13 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
         const token = authHeader.split(' ')[1];
         const decoded = verifyAccessToken(token);
+
+        // Check if user actually exists in DB (security best practice & prevents FK errors)
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'User validation failed' });
+        }
 
         req.user = decoded;
         next();

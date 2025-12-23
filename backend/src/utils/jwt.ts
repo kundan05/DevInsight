@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { User } from '@prisma/client';
-// import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import prisma from '../config/database';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -26,11 +26,11 @@ export interface TokenPayload {
 }
 
 export const generateAccessToken = (payload: TokenPayload): string => {
-    return jwt.sign(payload, (JWT_SECRET || DEV_SECRET) as string, { expiresIn: JWT_EXPIRES_IN as any });
+    return jwt.sign(payload, (JWT_SECRET || DEV_SECRET) as string, { expiresIn: JWT_EXPIRES_IN as any, jwtid: uuidv4() });
 };
 
 export const generateRefreshToken = (payload: TokenPayload): string => {
-    return jwt.sign(payload, (JWT_REFRESH_SECRET || DEV_REFRESH_SECRET) as string, { expiresIn: JWT_REFRESH_EXPIRES_IN as any });
+    return jwt.sign(payload, (JWT_REFRESH_SECRET || DEV_REFRESH_SECRET) as string, { expiresIn: JWT_REFRESH_EXPIRES_IN as any, jwtid: uuidv4() });
 };
 
 export const verifyAccessToken = (token: string): TokenPayload => {

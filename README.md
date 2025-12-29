@@ -1,17 +1,15 @@
 # DevInsight
 
-
-
 **DevInsight** is a real-time developer collaboration platform designed to streamline code sharing, pair programming, and skill assessment. It features a modern, responsive interface and robust backend to support seamless developer interactions.
 
-## 🚀 Features
+##  Features
 
--   **📡 Real-time Collaboration**: Code continuously with other developers using a synchronized editor (Monaco Editor + Socket.io).
--   **🧩 Code Snippets**: Create, manage, and share reusable code snippets with syntax highlighting.
--   **🏆 Coding Challenges**: Participate in algorithmic challenges, run test cases, and track your progress on the leaderboard.
--   **⚡ High Performance**: Built with a scalable architecture using Redis for caching and session management.
+-   ** Real-time Collaboration**: Code continuously with other developers using a synchronized editor (Monaco Editor + Socket.io).
+-   ** Code Snippets**: Create, manage, and share reusable code snippets with syntax highlighting.
+-   ** Coding Challenges**: Participate in algorithmic challenges.
+-   ** High Performance**: Built with a scalable architecture using Redis for caching and session management.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 -   **Framework**: React 18, TypeScript, Create React App
@@ -23,38 +21,38 @@
 ### Backend
 -   **Runtime**: Node.js
 -   **Framework**: Express.js
--   **Database**: PostgreSQL (via Prisma ORM)
+-   **Database**: SQLite (Development) / PostgreSQL (Production) - Managed via Prisma ORM
 -   **Caching**: Redis
 -   **Real-time**: Socket.io Server
 -   **Authentication**: JWT & Cookies
 
-## 🏗️ Architecture
+##  Architecture
 
 ```mermaid
 graph TD
     Client[React Client] <-->|HTTP/REST| API[Express API]
     Client <-->|WebSocket| Socket[Socket.io Service]
-    API -->|Query| DB[(PostgreSQL)]
+    API -->|Query| DB[(SQLite/Postgres)]
     API -->|Cache| Redis[(Redis)]
     Socket -->|Pub/Sub| Redis
 ```
 
-## 📸 Screenshots
+## Screenshots
 
 | Login Page | Dashboard |
 |:---:|:---:|
-| ![Login Page](./assets/login_page_1766389750004.png) | ![Dashboard](./assets/dashboard_page_1766389766309.png) |
+| ![Login Page](./assets/Screenshot%20from%202025-12-29%2015-37-28.png) | ![Dashboard](./assets/Screenshot%20from%202025-12-29%2015-38-02.png) |
 
 | Challenges List | Challenge Detail |
 |:---:|:---:|
-| ![Challenges](./assets/challenges_page_1766389778823.png) | ![Challenge Detail](./assets/challenge_detail_page_1766389814915.png) |
+| ![Challenges](./assets/Screenshot%20from%202025-12-29%2015-38-51.png) | ![Challenge Detail](./assets/Screenshot%20from%202025-12-29%2015-40-06.png) |
 
-## 🏁 Getting Started
+##  Getting Started
 
 ### Prerequisites
--   Node.js (v18+)
--   PostgreSQL
--   Redis
+-   **Node.js** (v18+)
+-   **npm**
+-   **Redis** (Required for caching/sessions. Ensure a Redis instance is running locally on port 6379, or update `.env`)
 
 ### Installation
 
@@ -67,21 +65,53 @@ graph TD
 2.  **Backend Setup**
     ```bash
     cd backend
-    cp .env.example .env
+    
+    # Install dependencies
     npm install
+    
+    # Configure Environment
+    cp .env.example .env
+    # NOTE: The default .env is configured for SQLite. 
+    # If using Postgres, update DATABASE_URL and ensure schema.prisma provider is "postgresql".
+    
+    # Initialize Database (SQLite by default)
     npx prisma migrate dev
+    
+    # Seed Database (Optional)
     npm run seed
+    
+    # Start the Server
     npm run dev
     ```
 
 3.  **Frontend Setup**
     ```bash
     cd frontend
+    
+    # Install dependencies
     npm install
+    
+    # Start the React App
     npm start
     ```
 
-4.  **Visit the app**
-    Open `http://localhost:3000` to view it in the browser.
+4.  **Visit the App**
+    Open `http://localhost:3000` to view the application.
 
+### Running Tests
+
+To run the backend integration tests:
+
+```bash
+cd backend
+npm test
+```
+
+###  Docker Support
+
+The project includes a `docker-compose.yml` for orchestrating the full stack (Frontend, Backend, Postgres, Redis).
+
+```bash
+docker-compose up --build
+```
 

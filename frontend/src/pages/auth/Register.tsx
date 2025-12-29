@@ -4,6 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { register, clearError } from '../../features/auth/authSlice';
 import { AppDispatch, RootState } from '../../store';
 import { toast } from 'react-hot-toast';
+import OrganicInput from '../../components/common/OrganicInput';
+import OrganicButton from '../../components/common/OrganicButton';
 
 const Register: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -46,102 +48,65 @@ const Register: React.FC = () => {
             </div>
 
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                <form className="space-y-6" onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200">
-                            Username
-                        </label>
-                        <div className="mt-2">
-                            <input
-                                id="username"
-                                name="username"
-                                type="text"
-                                required
-                                value={formData.username}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 pl-2"
-                            />
-                        </div>
+                <form className="space-y-2" onSubmit={handleSubmit}>
+                    <OrganicInput
+                        label="Username"
+                        id="username"
+                        name="username"
+                        required
+                        value={formData.username}
+                        onChange={handleChange}
+                    />
+
+                    <OrganicInput
+                        label="Email address"
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={formData.email}
+                        onChange={handleChange}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <OrganicInput
+                            label="First Name"
+                            id="firstName"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                        />
+                        <OrganicInput
+                            label="Last Name"
+                            id="lastName"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                        />
                     </div>
 
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200">
-                            Email address
-                        </label>
-                        <div className="mt-2">
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 pl-2"
-                            />
-                        </div>
-                    </div>
+                    <OrganicInput
+                        label="Password"
+                        id="password"
+                        name="password"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
 
-                    <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200">
-                            First Name
-                        </label>
-                        <div className="mt-2">
-                            <input
-                                id="firstName"
-                                name="firstName"
-                                type="text"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 pl-2"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200">
-                            Last Name
-                        </label>
-                        <div className="mt-2">
-                            <input
-                                id="lastName"
-                                name="lastName"
-                                type="text"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 pl-2"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200">
-                                Password
-                            </label>
-                        </div>
-                        <div className="mt-2">
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 pl-2"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <button
+                    <div className="pt-4">
+                        <OrganicButton
                             type="submit"
                             disabled={loading}
-                            className="flex w-full justify-center rounded-md bg-primary-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-50"
+                            variant="primary"
+                            shape="blob"
+                            className="w-full flex justify-center py-3"
                         >
                             {loading ? 'creating account...' : 'Register'}
-                        </button>
+                        </OrganicButton>
                     </div>
                 </form>
 

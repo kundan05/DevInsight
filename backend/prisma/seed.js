@@ -16,11 +16,11 @@ async function main() {
     // Create sample users
     const user1 = await prisma.user.create({
         data: {
-            email: 'john@example.com',
-            username: 'johndoe',
+            email: 'kundan2@example.com',
+            username: 'kundan2',
             password: await hashPasswordLocal('password123'),
-            firstName: 'John',
-            lastName: 'Doe',
+            firstName: 'Kundan',
+            lastName: 'gowda',
             bio: 'Full-stack developer',
             isEmailVerified: true,
             role: 'USER',

@@ -4,10 +4,10 @@
 
 ##  Features
 
--   ** Real-time Collaboration**: Code continuously with other developers using a synchronized editor (Monaco Editor + Socket.io).
--   ** Code Snippets**: Create, manage, and share reusable code snippets with syntax highlighting.
--   ** Coding Challenges**: Participate in algorithmic challenges.
--   ** High Performance**: Built with a scalable architecture using Redis for caching and session management.
+-   Real-time Collaboration: Code continuously with other developers using a synchronized editor (Monaco Editor + Socket.io).
+-   Code Snippets: Create, manage, and share reusable code snippets with syntax highlighting.
+-   Coding Challenges: Participate in algorithmic challenges.
+-   High Performance: Built with a scalable architecture using Redis for caching and session management.
 
 ##  Tech Stack
 

@@ -1,94 +1,167 @@
 # DevInsight
 
-**DevInsight** is a real-time developer collaboration platform designed to streamline code sharing, pair programming, and skill assessment. It features a modern, responsive interface and robust backend to support seamless developer interactions.
+**DevInsight** is a real-time developer collaboration platform built for code sharing, pair programming, and automated technical assessments. It provides a polished developer environment with synchronized editing, video calling, and sandboxed code execution.
 
-##  Features
+---
 
--   Real-time Collaboration: Code continuously with other developers using a synchronized editor (Monaco Editor + Socket.io).
--   Code Snippets: Create, manage, and share reusable code snippets with syntax highlighting.
--   Coding Challenges: Participate in algorithmic challenges.
--   High Performance: Built with a scalable architecture using Redis for caching and session management.
+## 🏗️ Architecture
 
-##  Tech Stack
+DevInsight is structured around a decoupled **Repository ➔ Service ➔ Controller** architecture to maintain clean separation of concerns, strict type-safety, and database portability.
 
-### Frontend
--   **Framework**: React 18, TypeScript, Create React App
--   **State Management**: Redux Toolkit
--   **Styling**: Tailwind CSS
--   **Editor**: Monaco Editor
--   **Real-time**: Socket.io Client
+```mermaid
+graph TD
+    Client[React Frontend / Monaco Editor] <-->|HTTP / Socket.io| Server[Express Server / Socket.io]
+    
+    subgraph Backend [Backend Stack]
+        Server -->|HTTP| Router[Routes Layer]
+        Server <-->|WebSockets| Sockets[Socket.io Handlers]
+        
+        Router -->|Middleware| MW[Auth, Joi Validation, Rate Limiter]
+        MW -->|Delegate| Ctrl[Controllers Layer]
+        
+        Ctrl -->|Call| Serv[Services Layer]
+        Sockets -->|Call| Serv
+        
+        subgraph Services [Business Logic]
+            Serv --> AuthService
+            Serv --> SnippetService
+            Serv --> ChallengeService
+            Serv --> CollaborationService
+            Serv --> AssessService
+            Serv --> SandboxService
+        end
+        
+        subgraph Repositories [Data Access]
+            AuthService --> UserRepository
+            SnippetService --> SnippetRepository
+            ChallengeService --> ChallengeRepository
+            CollaborationService --> RoomRepository
+            AssessService --> AssessmentRepository
+        end
+        
+        SandboxService -->|Safe execution| SafeVM[Node.js VM Sandbox / execSync Processes]
+        
+        UserRepository -->|Prisma| SQLite[(SQLite Dev/Test DB)]
+        SnippetRepository -->|Prisma| SQLite
+        ChallengeRepository -->|Prisma| SQLite
+        RoomRepository -->|Prisma| SQLite
+        AssessmentRepository -->|Prisma| SQLite
+        
+        CollaborationService -->|Pub/Sub & Caching| Redis[(Redis Caching)]
+    end
+```
 
-### Backend
--   **Runtime**: Node.js
--   **Framework**: Express.js
--   **Database**: SQLite (Development) / PostgreSQL (Production) - Managed via Prisma ORM
--   **Caching**: Redis
--   **Real-time**: Socket.io Server
--   **Authentication**: JWT & Cookies
+### Key Architectural Layers:
+1. **Controllers**: Purely HTTP mapping layers. They extract parameters, delegate to services, and format standardized responses.
+2. **Services**: Contain all domain business logic (e.g. grading tests, sandboxing code, managing socket sessions).
+3. **Repositories**: Abstracts database access using Prisma Client. Extends a generic `BaseRepository` providing unified CRUD behaviors.
+4. **Sandbox / VM**: Separated context executing untrusted Javascript, TypeScript, Python, and Java code safely.
+
+---
+
+## ⚡ Key Features
+
+*   **Real-time Collaboration**: Synchronized document editing via Socket.io and CRDTs (Y.js integration) with multi-cursor position indicators.
+*   **WebRTC Video Bubbles**: Floating video overlay for live pair-programming calls within the workspace.
+*   **Sandboxed Code Execution**: Custom-built VM engine evaluating user submissions against dynamic test cases across Javascript, Typescript, Python, and Java.
+*   **Custom Assessment Engine**: Custom dashboard for technical interviews, allowing creators to prepare timed quizzes and challenges.
+*   **Cache-Aside Caching**: High-performance optimization using Redis caching for high-read dashboards and leaderboards.
+*   **SQLite Compatibility**: Local development and testing are fully independent and run entirely on SQLite.
+
+---
+
+## 🛠️ Tech Stack
+
+*   **Frontend**: React 18, TypeScript, Redux Toolkit, Monaco Editor, Tailwind CSS, Socket.io Client.
+*   **Backend**: Node.js, Express, TypeScript, Prisma ORM, Socket.io Server, Redis.
+*   **Database**: SQLite for development and testing, with a model schema fully optimized to serialize complex JSON arrays/objects safely.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
--   **Node.js** (v18+)
--   **npm**
--   **Redis** (Required for caching/sessions. Ensure a Redis instance is running locally on port 6379, or update `.env`)
+*   **Node.js** (v18+)
+*   **Redis** (Optional. Automatically falls back to an in-memory mock if `REDIS_URL` is unset)
 
-### Installation
+---
 
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/yourusername/devinsight.git
-    cd devinsight
-    ```
+### Backend Setup
 
-2.  **Backend Setup**
+1.  **Navigate to the backend directory**:
     ```bash
     cd backend
-    
-    # Install dependencies
+    ```
+
+2.  **Install dependencies**:
+    ```bash
     npm install
-    
-    # Configure Environment
+    ```
+
+3.  **Configure environment**:
+    Create `.env` based on `.env.example`:
+    ```bash
     cp .env.example .env
-    # NOTE: The default .env is configured for SQLite. 
-    # If using Postgres, update DATABASE_URL and ensure schema.prisma provider is "postgresql".
-    
-    # Initialize Database (SQLite by default)
-    npx prisma migrate dev
-    
-    # Seed Database (Optional)
+    ```
+    *The backend defaults to using SQLite (`dev.db` file) for developer ease.*
+
+4.  **Initialize the Database**:
+    Sync the SQLite schema:
+    ```bash
+    npx prisma db push
+    ```
+
+5.  **Seed the Database**:
+    Add sample coding challenges and user data:
+    ```bash
     npm run seed
-    
-    # Start the Server
+    ```
+
+6.  **Run Development Server**:
+    ```bash
     npm run dev
     ```
 
-3.  **Frontend Setup**
+---
+
+### Frontend Setup
+
+1.  **Navigate to the frontend directory**:
     ```bash
-    cd frontend
-    
-    # Install dependencies
-    npm install
-    
-    # Start the React App
-    npm start
+    cd ../frontend
     ```
 
-4.  **Visit the App**
-    Open `http://localhost:3000` to view the application.
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-### Running Tests
+3.  **Run React app**:
+    ```bash
+    npm start
+    ```
+    *The application will open on `http://localhost:3000`.*
 
-To run the backend integration tests:
+---
+
+## 🧪 Running Tests
+
+A complete suite of unit and integration tests is included.
 
 ```bash
 cd backend
 npm test
 ```
 
-###  Docker Support
+*   **Integration tests** (`tests/integration/`) evaluate full HTTP flows and Auth cookies.
+*   **Unit tests** (`tests/unit/`) validate Services, Repositories, and the AppError boundary.
 
-The project includes a `docker-compose.yml` for orchestrating the full stack (Frontend, Backend, Postgres, Redis).
+---
+
+## 🐳 Docker Support
+
+To start the entire application stack including real Redis and Postgres instances:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
-

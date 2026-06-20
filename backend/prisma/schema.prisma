@@ -3,38 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-  CANDIDATE
-  INTERVIEWER
-  ADMIN
-  DEVELOPER
-}
-
-enum Difficulty {
-  EASY
-  MEDIUM
-  HARD
-  EXPERT
-}
-
-enum SubmissionStatus {
-  PENDING
-  RUNNING
-  ACCEPTED
-  WRONG_ANSWER
-  TIME_LIMIT_EXCEEDED
-  MEMORY_LIMIT_EXCEEDED
-  RUNTIME_ERROR
-  COMPILATION_ERROR
-}
-
-enum RoomStatus {
-  ACTIVE
-  ARCHIVED
 }
 
 model User {
@@ -48,7 +18,7 @@ model User {
   avatar      String?
   githubUrl   String?
   linkedinUrl String?
-  role        UserRole   @default(DEVELOPER)
+  role        String     @default("DEVELOPER")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -70,7 +40,7 @@ model Snippet {
   code        String
   isPublic    Boolean  @default(true)
   isTemplate  Boolean  @default(false)
-  tags        String[] @default([])
+  tags        String   @default("[]")
   viewCount   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -109,16 +79,16 @@ model Challenge {
   id          String     @id @default(uuid()) 
   title       String
   description String
-  difficulty  Difficulty
+  difficulty  String
   category    String
   starterCode String?
-  testCases   Json       @default("[]")
+  testCases   String     @default("[]")
   solution    String?
   points      Int        @default(10)
   isActive    Boolean    @default(true)
-  timeLimit   Int?                           @db.SmallInt
-  memoryLimit Int?                           @db.SmallInt
-  tags        String[]   @default([])
+  timeLimit   Int?
+  memoryLimit Int?
+  tags        String     @default("[]")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -129,13 +99,13 @@ model ChallengeSubmission {
   id            String           @id @default(uuid()) 
   code          String
   language      String
-  status        SubmissionStatus @default(PENDING)
+  status        String           @default("PENDING")
   executionTime Int?
   memoryUsed    Int?
   testsPassed   Int              @default(0)
   totalTests    Int
   score         Int              @default(0)
-  feedback      Json?
+  feedback      String?
   submittedAt   DateTime         @default(now())
 
   userId      String
@@ -149,7 +119,7 @@ model Collaboration {
   roomId        String     @unique
   code          String     @default("")
   language      String     @default("javascript")
-  documentState String?    @db.Text
+  documentState String?
   activeUsers   Int        @default(0)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -161,7 +131,7 @@ model Room {
   roomId      String     @unique
   code        String     @default("")
   language    String     @default("javascript")
-  status      RoomStatus @default(ACTIVE)
+  status      String     @default("ACTIVE")
   activeUsers Int        @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -173,7 +143,7 @@ model Assessment {
   id          String     @id @default(uuid()) 
   title       String
   description String
-  difficulty  Difficulty
+  difficulty  String
   category    String
   timeLimit   Int        @default(3600)
   passingScore Int       @default(70)
@@ -193,12 +163,12 @@ model AssessmentQuestion {
   id            String     @id @default(uuid()) 
   title         String
   description   String
-  difficulty    Difficulty
+  difficulty    String
   starterCode   String?
-  testCases     Json       @default("[]")
+  testCases     String     @default("[]")
   points        Int        @default(10)
-  timeLimit     Int?                          @db.SmallInt
-  memoryLimit   Int?                          @db.SmallInt
+  timeLimit     Int?
+  memoryLimit   Int?
   orderIndex    Int        @default(0)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -212,13 +182,13 @@ model AssessmentSubmission {
   id            String           @id @default(uuid()) 
   code          String
   language      String
-  status        SubmissionStatus @default(PENDING)
+  status        String           @default("PENDING")
   executionTime Int?
   memoryUsed    Int?
   testsPassed   Int              @default(0)
   totalTests    Int
   score         Int              @default(0)
-  feedback      Json?
+  feedback      String?
   submittedAt   DateTime         @default(now())
 
   userId       String

@@ -46,7 +46,7 @@ export class SnippetService {
       description: data.description,
       code: data.code,
       language: data.language,
-      tags: data.tags || [],
+      tags: JSON.stringify(data.tags || []),
       isPublic: data.isPublic !== undefined ? data.isPublic : true,
       author: { connect: { id: userId } },
     });
@@ -71,7 +71,10 @@ export class SnippetService {
       throw new ForbiddenError();
     }
 
-    const updateData: any = { ...data };
+    const updateData: any = {
+      ...data,
+      tags: data.tags ? JSON.stringify(data.tags) : undefined,
+    };
     const updated = await this.snippetRepo.update(id, updateData);
     return this.snippetRepo.parseTags(updated);
   }

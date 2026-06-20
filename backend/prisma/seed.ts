@@ -71,7 +71,7 @@ export const useApi = (url) => {
   return { data, loading, error };
 };`,
             language: 'javascript',
-            tags: ['react', 'hooks', 'api'],
+            tags: JSON.stringify(['react', 'hooks', 'api']),
             authorId: user1.id,
         },
     });
@@ -252,9 +252,9 @@ export const useApi = (url) => {
                 difficulty: challenge.difficulty as any,
                 category: challenge.category,
                 starterCode: challenge.starterCode,
-                testCases: challenge.testCases,
+                testCases: JSON.stringify(challenge.testCases),
                 points: challenge.points,
-                tags: challenge.tags,
+                tags: JSON.stringify(challenge.tags),
             }
         });
     }

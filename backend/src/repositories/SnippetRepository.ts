@@ -36,7 +36,7 @@ export class SnippetRepository extends BaseRepository<Snippet, CreateSnippetInpu
 
     if (language) where.language = language;
     if (authorId) where.authorId = authorId;
-    if (tag) where.tags = { hasSome: [tag] };
+    if (tag) where.tags = { contains: tag };
     if (search) {
       where.OR = [
         { title: { contains: search } },

@@ -53,7 +53,7 @@ export class AssessmentRepository extends BaseRepository<
   }
 
   async findByIdWithQuestions(id: string): Promise<Assessment | null> {
-    return this.model.findUnique({
+    const assessment = await this.model.findUnique({
       where: { id },
       include: {
         questions: { orderBy: { orderIndex: 'asc' } },
@@ -62,10 +62,14 @@ export class AssessmentRepository extends BaseRepository<
         },
       },
     });
+    if (!assessment) return null;
+    return this.parseAssessment(assessment);
   }
 
   async findQuestionById(id: string): Promise<any | null> {
-    return this.prisma.assessmentQuestion.findUnique({ where: { id } });
+    const q = await this.prisma.assessmentQuestion.findUnique({ where: { id } });
+    if (!q) return null;
+    return this.parseQuestion(q);
   }
 
   async createWithQuestions(data: {
@@ -101,7 +105,7 @@ export class AssessmentRepository extends BaseRepository<
               description: q.description,
               difficulty: q.difficulty,
               starterCode: q.starterCode,
-              testCases: q.testCases,
+              testCases: JSON.stringify(q.testCases),
               points: q.points,
               orderIndex: idx,
             })),
@@ -111,8 +115,32 @@ export class AssessmentRepository extends BaseRepository<
           questions: { orderBy: { orderIndex: 'asc' } },
         },
       });
-      return assessment;
+      return this.parseAssessment(assessment);
     });
+  }
+
+  parseQuestion(q: any): any {
+    if (!q) return q;
+    return {
+      ...q,
+      testCases: typeof q.testCases === 'string' ? this.safeJsonParse(q.testCases, []) : (q.testCases ?? []),
+    };
+  }
+
+  parseAssessment(assessment: any): any {
+    if (!assessment) return assessment;
+    return {
+      ...assessment,
+      questions: assessment.questions ? assessment.questions.map((q: any) => this.parseQuestion(q)) : undefined,
+    };
+  }
+
+  private safeJsonParse(value: string, fallback: any): any {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
   }
 
   async createSubmission(data: {

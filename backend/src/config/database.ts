@@ -1,38 +1,43 @@
 import { PrismaClient } from '@prisma/client';
 import logger from '../utils/logger';
 
-let prisma: PrismaClient;
+let prisma: PrismaClient | null = null;
 
 export const getPrismaClient = (): PrismaClient => {
-    if (!prisma) {
-        prisma = new PrismaClient({
-            log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-        });
-    }
-    return prisma;
+  if (!prisma) {
+    prisma = new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    });
+  }
+  return prisma;
 };
 
 export const connectDatabase = async (): Promise<void> => {
-    try {
-        const client = getPrismaClient();
-        await client.$connect();
-        logger.info('PostgreSQL connected successfully');
-    } catch (error) {
-        logger.error('PostgreSQL connection error:', error);
-        throw error;
-    }
+  try {
+    const client = getPrismaClient();
+    await client.$connect();
+    logger.info('Database connected successfully');
+  } catch (error) {
+    logger.error('Database connection error:', error);
+    throw error;
+  }
 };
 
 export const disconnectDatabase = async (): Promise<void> => {
-    try {
-        if (prisma) {
-            await prisma.$disconnect();
-            logger.info('PostgreSQL disconnected');
-        }
-    } catch (error) {
-        logger.error('Error disconnecting from PostgreSQL:', error);
-        throw error;
+  try {
+    if (prisma) {
+      await prisma.$disconnect();
+      prisma = null;
+      logger.info('Database disconnected');
     }
+  } catch (error) {
+    logger.error('Error disconnecting from database:', error);
+    throw error;
+  }
+};
+
+export const resetPrismaClient = (): void => {
+  prisma = null;
 };
 
 export default getPrismaClient();

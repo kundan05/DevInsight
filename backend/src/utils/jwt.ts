@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import prisma from '../config/database';
+import { getPrismaClient } from '../config/database';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -22,6 +22,7 @@ const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 export interface TokenPayload {
     userId: string;
     email: string;
+    username: string;
     role: string;
 }
 
@@ -45,18 +46,27 @@ export const generateTokenPair = async (user: User) => {
     const payload: TokenPayload = {
         userId: user.id,
         email: user.email,
+        username: user.username,
         role: user.role,
     };
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
-    // In a real app, store refresh token or hash of it in DB
+    const prisma = getPrismaClient();
+    const expiresInMs = (() => {
+      const env = JWT_REFRESH_EXPIRES_IN;
+      if (env.endsWith('d')) return parseInt(env) * 24 * 60 * 60 * 1000;
+      if (env.endsWith('h')) return parseInt(env) * 60 * 60 * 1000;
+      if (env.endsWith('m')) return parseInt(env) * 60 * 1000;
+      return 7 * 24 * 60 * 60 * 1000;
+    })();
+
     await prisma.refreshToken.create({
         data: {
             token: refreshToken,
             userId: user.id,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+            expiresAt: new Date(Date.now() + expiresInMs),
         },
     });
 

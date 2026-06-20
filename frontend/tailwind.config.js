@@ -3,62 +3,52 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Outfit', 'sans-serif'],
-                display: ['Fraunces', 'serif'], // For headings, adds character
-                hand: ['Caveat', 'cursive'], // For organic touches
+                display: ['Syne', 'sans-serif'],
+                sans: ['Inter', 'sans-serif'],
+                mono: ['"JetBrains Mono"', 'monospace'],
             },
             colors: {
-                primary: {
-                    50: '#f0f9ff',
-                    100: '#e0f2fe',
-                    500: '#0ea5e9',
-                    600: '#0284c7',
-                    700: '#0369a1',
+                deep: {
+                    base: '#0b0d17',
+                    surface: '#141620',
+                    elevated: '#1b1e2d',
                 },
-                // Organic palette additions
-                organic: {
-                    clay: '#e8e6e3',
-                    sand: '#f5f5f0',
-                    moss: '#4a5d23',
-                    charcoal: '#2c2c2c',
-                }
-            },
-            borderRadius: {
-                'organic-1': '255px 15px 225px 15px / 15px 225px 15px 255px',
-                'organic-2': '20px 225px 20px 225px / 255px 15px 225px 15px',
-                'organic-3': '15% 85% 24% 76% / 46% 77% 23% 54%',
+                border: '#25283b',
+                text: {
+                    primary: '#e8ebf0',
+                    muted: '#7e829b',
+                },
+                accent: {
+                    copper: '#d4815a',
+                    'copper-dim': '#a86642',
+                    teal: '#58b0a4',
+                },
+                status: {
+                    success: '#7fb87a',
+                    danger: '#e66a6a',
+                    warning: '#d9a056',
+                },
             },
             animation: {
-                'float': 'float 6s ease-in-out infinite',
-                'breathe': 'breathe 4s ease-in-out infinite',
-                'wiggle': 'wiggle 1s ease-in-out infinite',
-                'blob': 'blob 7s infinite',
-                'tilt': 'tilt 10s infinite linear',
+                'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'fade-in': 'fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                'slide-up': 'slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                'typewriter': 'typewriter 2s steps(40) forwards',
+                'live-pulse': 'livePulse 2s ease-in-out infinite',
             },
             keyframes: {
-                float: {
-                    '0%, 100%': { transform: 'translateY(0)' },
-                    '50%': { transform: 'translateY(-20px)' },
+                fadeIn: {
+                    from: { opacity: '0', transform: 'translateY(8px)' },
+                    to: { opacity: '1', transform: 'translateY(0)' },
                 },
-                breathe: {
-                    '0%, 100%': { transform: 'scale(1)' },
-                    '50%': { transform: 'scale(1.05)' },
+                slideUp: {
+                    from: { opacity: '0', transform: 'translateY(20px)' },
+                    to: { opacity: '1', transform: 'translateY(0)' },
                 },
-                wiggle: {
-                    '0%, 100%': { transform: 'rotate(-3deg)' },
-                    '50%': { transform: 'rotate(3deg)' },
+                livePulse: {
+                    '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                    '50%': { opacity: '0.7', transform: 'scale(0.95)' },
                 },
-                blob: {
-                    '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                    '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                    '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                    '100%': { transform: 'translate(0px, 0px) scale(1)' },
-                },
-                tilt: {
-                    '0%, 50%, 100%': { transform: 'rotate(0deg)' },
-                    '25%': { transform: 'rotate(1deg)' },
-                    '75%': { transform: 'rotate(-1deg)' },
-                }
             },
         },
     },

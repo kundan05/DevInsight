@@ -18,7 +18,10 @@ export const login = createAsyncThunk(
             localStorage.setItem('token', data.accessToken);
             return data;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Login failed');
+            const message = error.response?.data?.errors
+                ? error.response.data.errors.join('. ')
+                : (error.response?.data?.message || 'Login failed');
+            return rejectWithValue(message);
         }
     }
 );
@@ -31,19 +34,18 @@ export const register = createAsyncThunk(
             localStorage.setItem('token', data.accessToken);
             return data;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Registration failed');
+            const message = error.response?.data?.errors
+                ? error.response.data.errors.join('. ')
+                : (error.response?.data?.message || 'Registration failed');
+            return rejectWithValue(message);
         }
     }
 );
 
 export const logout = createAsyncThunk(
     'auth/logout',
-    async (_, { rejectWithValue }) => {
-        try {
-            await authService.logout();
-        } catch (error: any) {
-            console.error('Logout error', error);
-        }
+    async () => {
+        await authService.logout();
     }
 );
 
@@ -80,6 +82,9 @@ const authSlice = createSlice({
                 state.isAuthenticated = true;
                 state.token = action.payload.accessToken;
                 state.user = action.payload.user;
+                if (action.payload.refreshToken) {
+                    localStorage.setItem('refreshToken', action.payload.refreshToken);
+                }
             })
             .addCase(login.rejected, (state, action) => {
                 state.loading = false;
@@ -95,17 +100,33 @@ const authSlice = createSlice({
                 state.isAuthenticated = true;
                 state.token = action.payload.accessToken;
                 state.user = action.payload.user;
+                if (action.payload.refreshToken) {
+                    localStorage.setItem('refreshToken', action.payload.refreshToken);
+                }
             })
             .addCase(register.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
             // Logout
+            .addCase(logout.pending, (state) => {
+                state.loading = true;
+            })
             .addCase(logout.fulfilled, (state) => {
                 state.user = null;
                 state.token = null;
                 state.isAuthenticated = false;
                 state.loading = false;
+                state.error = null;
+                localStorage.removeItem('refreshToken');
+            })
+            .addCase(logout.rejected, (state) => {
+                state.user = null;
+                state.token = null;
+                state.isAuthenticated = false;
+                state.loading = false;
+                state.error = null;
+                localStorage.removeItem('refreshToken');
             })
             // Load User
             .addCase(loadUser.pending, (state) => {

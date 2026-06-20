@@ -20,7 +20,7 @@ async function main() {
             firstName: 'John',
             lastName: 'Doe',
             bio: 'Full-stack developer',
-            role: 'USER',
+            role: 'DEVELOPER',
         },
     });
 
@@ -71,7 +71,7 @@ export const useApi = (url) => {
   return { data, loading, error };
 };`,
             language: 'javascript',
-            tags: JSON.stringify(['react', 'hooks', 'api']),
+            tags: ['react', 'hooks', 'api'],
             authorId: user1.id,
         },
     });
@@ -84,13 +84,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Arrays',
             starterCode: 'function twoSum(nums, target) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [[2, 7, 11, 15], 9], expectedOutput: [0, 1] },
                 { input: [[3, 2, 4], 6], expectedOutput: [1, 2] },
                 { input: [[3, 3], 6], expectedOutput: [0, 1] }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['arrays', 'hash-table', 'algorithms']),
+            tags: ['arrays', 'hash-table', 'algorithms'],
         },
         {
             title: 'Roman to Integer',
@@ -98,13 +98,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Math',
             starterCode: 'function romanToInt(s) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: "III", expectedOutput: 3 },
                 { input: "LVIII", expectedOutput: 58 },
                 { input: "MCMXCIV", expectedOutput: 1994 }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['hash-table', 'math', 'string']),
+            tags: ['hash-table', 'math', 'string'],
         },
         {
             title: '3Sum',
@@ -112,13 +112,13 @@ export const useApi = (url) => {
             difficulty: 'MEDIUM',
             category: 'Arrays',
             starterCode: 'function threeSum(nums) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [-1, 0, 1, 2, -1, -4], expectedOutput: [[-1, -1, 2], [-1, 0, 1]] },
                 { input: [0, 1, 1], expectedOutput: [] },
                 { input: [0, 0, 0], expectedOutput: [[0, 0, 0]] }
-            ]),
+            ],
             points: 200,
-            tags: JSON.stringify(['array', 'two-pointers', 'sorting']),
+            tags: ['array', 'two-pointers', 'sorting'],
         },
         {
             title: 'Number of 1 Bits',
@@ -126,13 +126,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Bit Manipulation',
             starterCode: 'function hammingWeight(n) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: 11, expectedOutput: 3 },
                 { input: 128, expectedOutput: 1 },
                 { input: 2147483645, expectedOutput: 30 }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['bit-manipulation']),
+            tags: ['bit-manipulation'],
         },
         {
             title: 'Palindrome Number',
@@ -140,13 +140,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Math',
             starterCode: 'function isPalindrome(x) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: 121, expectedOutput: true },
                 { input: -121, expectedOutput: false },
                 { input: 10, expectedOutput: false }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['math']),
+            tags: ['math'],
         },
         {
             title: 'Merge Sorted Array',
@@ -154,13 +154,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Arrays',
             starterCode: 'function merge(nums1, m, nums2, n) {\\n  // Your code here\\n  return nums1;\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [[1, 2, 3, 0, 0, 0], 3, [2, 5, 6], 3], expectedOutput: [1, 2, 2, 3, 5, 6] },
                 { input: [[1], 1, [], 0], expectedOutput: [1] },
                 { input: [[0], 0, [1], 1], expectedOutput: [1] }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['array', 'two-pointers', 'sorting']),
+            tags: ['array', 'two-pointers', 'sorting'],
         },
         {
             title: 'Fibonacci Number',
@@ -168,13 +168,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Dynamic Programming',
             starterCode: 'function fib(n) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: 2, expectedOutput: 1 },
                 { input: 3, expectedOutput: 2 },
                 { input: 4, expectedOutput: 3 }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['math', 'dynamic-programming']),
+            tags: ['math', 'dynamic-programming'],
         },
         {
             title: 'Remove Duplicates from Sorted Array',
@@ -182,12 +182,12 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Arrays',
             starterCode: 'function removeDuplicates(nums) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [[1, 1, 2]], expectedOutput: 2 },
                 { input: [[0, 0, 1, 1, 1, 2, 2, 3, 3, 4]], expectedOutput: 5 }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['array', 'two-pointers']),
+            tags: ['array', 'two-pointers'],
         },
         {
             title: 'Best Time to Buy and Sell Stock',
@@ -195,12 +195,12 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Dynamic Programming',
             starterCode: 'function maxProfit(prices) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [7, 1, 5, 3, 6, 4], expectedOutput: 5 },
                 { input: [7, 6, 4, 3, 1], expectedOutput: 0 }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['array', 'dynamic-programming']),
+            tags: ['array', 'dynamic-programming'],
         },
         {
             title: 'Median of Two Sorted Arrays',
@@ -208,12 +208,12 @@ export const useApi = (url) => {
             difficulty: 'HARD',
             category: 'Algorithms',
             starterCode: 'function findMedianSortedArrays(nums1, nums2) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [[1, 3], [2]], expectedOutput: 2 },
                 { input: [[1, 2], [3, 4]], expectedOutput: 2.5 }
-            ]),
+            ],
             points: 300,
-            tags: JSON.stringify(['array', 'binary-search', 'divide-and-conquer']),
+            tags: ['array', 'binary-search', 'divide-and-conquer'],
         },
         {
             title: 'N-Repeated Element in Size 2N Array',
@@ -221,13 +221,13 @@ export const useApi = (url) => {
             difficulty: 'EASY',
             category: 'Hash Table',
             starterCode: 'function repeatedNTimes(nums) {\\n  // Your code here\\n}',
-            testCases: JSON.stringify([
+            testCases: [
                 { input: [1, 2, 3, 3], expectedOutput: 3 },
                 { input: [2, 1, 2, 5, 3, 2], expectedOutput: 2 },
                 { input: [5, 1, 5, 2, 5, 3, 5, 4], expectedOutput: 5 }
-            ]),
+            ],
             points: 100,
-            tags: JSON.stringify(['array', 'hash-table']),
+            tags: ['array', 'hash-table'],
         }
     ];
 

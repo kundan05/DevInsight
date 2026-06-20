@@ -1,0 +1,8 @@
+{
+  "short_name": "DevInsight",
+  "name": "DevInsight — Developer Collaboration Platform",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0b0d17",
+  "background_color": "#0b0d17"
+}

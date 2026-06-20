@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { RootState } from '../store';
 import api from '../services/api';
+import { FiCode, FiAward, FiHeart, FiPlus, FiZap } from 'react-icons/fi';
 
 const Dashboard: React.FC = () => {
     const { user } = useSelector((state: RootState) => state.auth);
     const [stats, setStats] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -14,66 +17,87 @@ const Dashboard: React.FC = () => {
                 setStats(response.data.stats);
             } catch (error) {
                 console.error('Error fetching stats', error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchStats();
     }, []);
 
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Welcome back, {user?.firstName || user?.username}!</h1>
+    const statCards = [
+        { label: 'Total Snippets', value: stats?.snippetCount || 0, icon: FiCode },
+        { label: 'Likes Received', value: stats?.likesReceived || 0, icon: FiHeart },
+        { label: 'Challenges Solved', value: stats?.challengesSolved || 0, icon: FiAward },
+    ];
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                {/* Card 1 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Snippets</dt>
-                        <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{stats?.snippetCount || 0}</dd>
-                    </div>
-                </div>
-                {/* Card 2 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Likes Received</dt>
-                        <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{stats?.likesReceived || 0}</dd>
-                    </div>
-                </div>
-                {/* Card 3 */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Challenges Solved</dt>
-                        <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{stats?.challengesSolved || 0}</dd>
-                    </div>
-                </div>
+    if (loading) {
+        return (
+            <div className="animate-fade-in flex items-center justify-center min-h-[50vh]">
+                <div className="w-8 h-8 border-2 border-accent-copper border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="animate-fade-in">
+            <div className="mb-10">
+                <h1 className="heading text-3xl sm:text-4xl text-text-primary mb-2">
+                    Welcome back, {user?.firstName || user?.username}
+                </h1>
+                <p className="text-text-muted">Here&apos;s your DevInsight overview.</p>
             </div>
 
-            {/* Recent Activity Section (Placeholder) */}
-            <div className="mt-8">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-                <div className="bg-white dark:bg-gray-800 shadow sm:rounded-md">
-                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {(!stats?.recentActivity || stats.recentActivity.length === 0) ? (
-                            <li className="px-4 py-10 sm:px-6 text-center">
-                                <p className="text-gray-500 dark:text-gray-400 mb-4">No recent activity found.</p>
-                                <div className="flex justify-center space-x-4">
-                                    <a href="/snippets/create" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        Create Snippet
-                                    </a>
-                                    <a href="/challenges" className="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        Solve Challenge
-                                    </a>
-                                </div>
-                            </li>
-                        ) : (
-                            stats.recentActivity.map((activity: any, index: number) => (
-                                <li key={index} className="px-4 py-4 sm:px-6">
-                                    {/* Render actual activity here */}
-                                    Activity Item
-                                </li>
-                            ))
-                        )}
-                    </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
+                {statCards.map((stat) => {
+                    const Icon = stat.icon;
+                    return (
+                        <div key={stat.label} className="card p-6">
+                            <div className="flex items-center justify-between mb-3">
+                                <Icon className="w-5 h-5 text-accent-copper" />
+                                <span className="heading text-2xl text-text-primary">
+                                    {stat.value}
+                                </span>
+                            </div>
+                            <p className="text-sm text-text-muted font-mono">{stat.label}</p>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <div className="card p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="heading text-lg text-text-primary">Recent Activity</h2>
+                    <div className="flex gap-2">
+                        <Link to="/snippets/create" className="btn btn-primary btn-sm">
+                            <FiPlus className="w-4 h-4" />
+                            New Snippet
+                        </Link>
+                        <Link to="/challenges" className="btn btn-ghost btn-sm">
+                            <FiZap className="w-4 h-4" />
+                            Challenges
+                        </Link>
+                    </div>
                 </div>
+
+                {(!stats?.recentActivity || stats.recentActivity.length === 0) ? (
+                    <div className="text-center py-12">
+                        <div className="w-12 h-12 rounded-full bg-deep-elevated border border-border flex items-center justify-center mx-auto mb-4">
+                            <FiCode className="w-5 h-5 text-text-muted" />
+                        </div>
+                        <p className="text-text-muted mb-1">No activity yet</p>
+                        <p className="text-sm text-text-muted/60">
+                            Create your first snippet or solve a challenge to get started.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-1">
+                        {stats.recentActivity.map((activity: any, index: number) => (
+                            <div key={index} className="text-sm text-text-muted py-2">
+                                {activity.type || 'Activity'} — {activity.description || ''}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

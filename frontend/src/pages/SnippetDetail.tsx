@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import CodeEditor from '../components/common/CodeEditor';
-import { FaHeart, FaComment, FaShare } from 'react-icons/fa';
+import { FiHeart, FiMessageSquare, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
 const SnippetDetail: React.FC = () => {
@@ -22,15 +22,11 @@ const SnippetDetail: React.FC = () => {
             setSnippet((prev: any) => ({
                 ...prev,
                 comments: [response.data.comment, ...(prev.comments || [])],
-                _count: {
-                    ...prev._count,
-                    comments: (prev._count.comments || 0) + 1
-                }
+                _count: { ...prev._count, comments: (prev._count.comments || 0) + 1 },
             }));
             setComment('');
             toast.success('Comment added');
         } catch (error) {
-            console.error('Comment error:', error);
             toast.error('Failed to add comment');
         } finally {
             setSubmittingComment(false);
@@ -52,119 +48,177 @@ const SnippetDetail: React.FC = () => {
     }, [id]);
 
     const handleLike = async () => {
+        const prev = snippet;
+        setSnippet((p: any) => ({
+            ...p,
+            _count: { ...p._count, likes: p._count.likes + 1 },
+        }));
         try {
-            await api.post(`/snippets/${id}/like`);
-            // Optimistically update UI or refetch
-            setSnippet((prev: any) => ({
-                ...prev,
-                _count: {
-                    ...prev._count,
-                    likes: prev._count.likes + 1 // Basic toggle logic needed actual response
-                }
-            }));
-            toast.success('Liked!');
-        } catch (error) {
+            const response = await api.post(`/snippets/${id}/like`);
+            if (!response.data.liked) {
+                setSnippet((p: any) => ({
+                    ...p,
+                    _count: { ...p._count, likes: p._count.likes - 1 },
+                }));
+            }
+            toast.success(response.data.liked ? 'Liked!' : 'Unliked');
+        } catch {
+            setSnippet(prev);
             toast.error('Failed to like');
         }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[50vh]">
+                <div className="w-8 h-8 border-2 border-accent-copper border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+    if (!snippet) {
+        return (
+            <div className="text-center py-20">
+                <p className="text-text-muted">Snippet not found</p>
+                <Link to="/snippets" className="btn btn-ghost mt-4">
+                    Back to snippets
+                </Link>
+            </div>
+        );
     }
 
-    if (loading) return <div>Loading...</div>;
-    if (!snippet) return <div>Snippet not found</div>;
-
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
+        <div className="max-w-4xl mx-auto animate-fade-in">
+            <Link
+                to="/snippets"
+                className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-text-primary mb-6 transition-colors"
+            >
+                <FiArrowLeft className="w-4 h-4" />
+                Back to snippets
+            </Link>
+
+            <div className="card p-6 mb-6">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
                         <Link to={`/profile/${snippet.author.username}`}>
-                            <img className="h-10 w-10 rounded-full" src={snippet.author.avatar || `https://ui-avatars.com/api/?name=${snippet.author.username}`} alt="" />
+                            <div className="w-10 h-10 rounded-full bg-deep-elevated border border-border flex items-center justify-center overflow-hidden">
+                                {snippet.author.avatar ? (
+                                    <img src={snippet.author.avatar} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-sm text-text-muted font-mono">
+                                        {snippet.author.username.charAt(0).toUpperCase()}
+                                    </span>
+                                )}
+                            </div>
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{snippet.title}</h1>
-                            <p className="text-sm text-gray-500">By <span className="font-medium text-gray-900 dark:text-white">{snippet.author.username}</span> on {new Date(snippet.createdAt).toDateString()}</p>
+                            <h1 className="heading text-xl sm:text-2xl text-text-primary">
+                                {snippet.title}
+                            </h1>
+                            <p className="text-sm text-text-muted">
+                                by{' '}
+                                <Link to={`/profile/${snippet.author.username}`} className="link">
+                                    {snippet.author.username}
+                                </Link>{' '}
+                                &middot; {new Date(snippet.createdAt).toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                })}
+                            </p>
                         </div>
                     </div>
-                    <div className="flex space-x-2">
-                        <button onClick={handleLike} className="flex items-center space-x-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
-                            <FaHeart className="text-red-500" />
-                            <span>{snippet._count.likes}</span>
-                        </button>
-                    </div>
+                    <button
+                        onClick={handleLike}
+                        className="flex items-center gap-2 px-4 py-2 rounded-md bg-deep-surface border border-border text-text-muted hover:text-status-danger hover:border-status-danger/30 transition-all text-sm"
+                    >
+                        <FiHeart className="w-4 h-4" />
+                        {snippet._count.likes}
+                    </button>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-6">{snippet.description}</p>
 
-                <CodeEditor code={snippet.code} language={snippet.language} readOnly={true} />
+                {snippet.description && (
+                    <p className="text-text-muted/80 text-sm mb-6">{snippet.description}</p>
+                )}
 
-                <div className="mt-6 flex flex-wrap gap-2">
+                <CodeEditor code={snippet.code} language={snippet.language} readOnly />
+
+                <div className="flex flex-wrap gap-2 mt-6">
                     {snippet.tags.map((tag: string) => (
-                        <span key={tag} className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                        <span key={tag} className="tag">
                             #{tag}
                         </span>
                     ))}
                 </div>
             </div>
 
-            {/* Comments Section */}
-            <div className="mt-12 border-t pt-8 border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-                    <FaComment className="text-gray-400" />
+            {/* Comments */}
+            <div className="card p-6">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-text-primary mb-6">
+                    <FiMessageSquare className="w-4 h-4 text-text-muted" />
                     Comments ({snippet._count.comments})
                 </h2>
 
                 <form onSubmit={handleCommentSubmit} className="mb-8">
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            <textarea
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                placeholder="Add a comment..."
-                                className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors resize-none"
-                                rows={3}
-                            />
-                        </div>
+                    <div className="flex gap-3">
+                        <textarea
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            placeholder="Add a comment…"
+                            className="input resize-none flex-1 min-h-[80px]"
+                            rows={3}
+                        />
                         <button
                             type="submit"
                             disabled={submittingComment || !comment.trim()}
-                            className="h-fit px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn btn-primary self-start"
                         >
-                            {submittingComment ? 'Posting...' : 'Post'}
+                            {submittingComment ? 'Posting…' : 'Post'}
                         </button>
                     </div>
                 </form>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {snippet.comments && snippet.comments.length > 0 ? (
-                        snippet.comments.map((comment: any) => (
-                            <div key={comment.id} className="flex gap-4">
-                                <Link to={`/profile/${comment.author.username}`}>
-                                    <img
-                                        src={comment.author.avatar || `https://ui-avatars.com/api/?name=${comment.author.username}`}
-                                        alt={comment.author.username}
-                                        className="w-10 h-10 rounded-full object-cover"
-                                    />
+                        snippet.comments.map((c: any) => (
+                            <div key={c.id} className="flex gap-3">
+                                <Link to={`/profile/${c.author.username}`}>
+                                    <div className="w-8 h-8 rounded-full bg-deep-elevated border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        {c.author.avatar ? (
+                                            <img src={c.author.avatar} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-[9px] text-text-muted font-mono">
+                                                {c.author.username.charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
                                 </Link>
-                                <div className="flex-1">
-                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                                        <div className="flex justify-between items-start mb-2">
+                                <div className="flex-1 min-w-0">
+                                    <div className="card p-4">
+                                        <div className="flex items-center justify-between mb-2">
                                             <Link
-                                                to={`/profile/${comment.author.username}`}
-                                                className="font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400"
+                                                to={`/profile/${c.author.username}`}
+                                                className="text-sm font-medium text-text-primary hover:text-accent-teal transition-colors"
                                             >
-                                                {comment.author.username}
+                                                {c.author.username}
                                             </Link>
-                                            <span className="text-xs text-gray-500">
-                                                {new Date(comment.createdAt).toLocaleDateString()}
+                                            <span className="text-xs text-text-muted font-mono">
+                                                {new Date(c.createdAt).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                })}
                                             </span>
                                         </div>
-                                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm">
-                                            {comment.content}
+                                        <p className="text-sm text-text-muted/80 whitespace-pre-wrap">
+                                            {c.content}
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-500 text-center py-8">No comments yet. Be the first to share your thoughts!</p>
+                        <p className="text-center text-sm text-text-muted py-8">
+                            No comments yet. Be the first to share your thoughts.
+                        </p>
                     )}
                 </div>
             </div>

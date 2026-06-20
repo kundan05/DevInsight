@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { Challenge, ChallengeSubmissionResult } from '../../types';
-import CodeEditor from '../editor/CodeEditor';
-import toast from 'react-hot-toast';
+import CodeEditor from '../common/CodeEditor';
+import { toast } from 'react-hot-toast';
+import { FiArrowLeft, FiPlay, FiCheck } from 'react-icons/fi';
 
 const ChallengeDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -24,34 +25,25 @@ const ChallengeDetail: React.FC = () => {
                 setChallenge(response.data.challenge);
                 setCode(response.data.challenge.starterCode || '// Write your solution here');
             } catch (error) {
-                console.error('Error fetching challenge:', error);
                 toast.error('Failed to load challenge');
                 navigate('/challenges');
             } finally {
                 setLoading(false);
             }
         };
-
         if (id) fetchChallenge();
     }, [id, navigate]);
 
     const handleRun = async () => {
         if (!code) return;
-
         try {
             setRunning(true);
             setResult(null);
             setRunResult(null);
-
-            const response = await api.post(`/challenges/${id}/run`, {
-                code,
-                language
-            });
-
+            const response = await api.post(`/challenges/${id}/run`, { code, language });
             setRunResult(response.data.results);
             toast.success('Run completed');
         } catch (error: any) {
-            console.error('Run error:', error);
             toast.error(error.response?.data?.message || 'Failed to run code');
         } finally {
             setRunning(false);
@@ -60,17 +52,11 @@ const ChallengeDetail: React.FC = () => {
 
     const handleSubmit = async () => {
         if (!code) return;
-
         try {
             setSubmitting(true);
             setResult(null);
             setRunResult(null);
-
-            const response = await api.post(`/challenges/${id}/submit`, {
-                code,
-                language
-            });
-
+            const response = await api.post(`/challenges/${id}/submit`, { code, language });
             setResult(response.data);
             if (response.data.submission.status === 'ACCEPTED') {
                 toast.success('Solution Accepted!');
@@ -78,120 +64,149 @@ const ChallengeDetail: React.FC = () => {
                 toast.error('Wrong Answer');
             }
         } catch (error: any) {
-            console.error('Submission error:', error);
             toast.error(error.response?.data?.message || 'Failed to submit solution');
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) return <div className="text-gray-900 dark:text-white p-6">Loading...</div>;
-    if (!challenge) return <div className="text-gray-900 dark:text-white p-6">Challenge not found</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[50vh]">
+                <div className="w-8 h-8 border-2 border-accent-copper border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+    if (!challenge) {
+        return (
+            <div className="text-center py-20">
+                <p className="text-text-muted">Challenge not found</p>
+            </div>
+        );
+    }
+
+    const isAccepted = result?.submission.status === 'ACCEPTED';
 
     return (
-        <div className="flex h-[calc(100vh-64px)] overflow-hidden">
-            {/* Left Panel: Problem Description */}
-            <div className="w-1/3 bg-gray-800 border-r border-gray-700 flex flex-col overflow-y-auto">
-                <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                        <h1 className="text-2xl font-bold text-white">{challenge.title}</h1>
-                        <span className="bg-indigo-600 text-white text-xs px-2 py-1 rounded">
-                            {challenge.difficulty}
-                        </span>
-                    </div>
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-8rem)] gap-0 lg:gap-0 -mx-4 sm:-mx-6 lg:-mx-8 animate-fade-in">
+            <div className="w-full lg:w-[35%] overflow-y-auto border-r border-border bg-deep-base p-6">
+                <button
+                    onClick={() => navigate('/challenges')}
+                    className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary mb-6 transition-colors"
+                >
+                    <FiArrowLeft className="w-4 h-4" />
+                    All Challenges
+                </button>
 
-                    <div className="prose prose-invert max-w-none mb-6">
-                        <div className="whitespace-pre-wrap text-gray-300 font-sans">
-                            {challenge.description}
+                <div className="flex items-start justify-between mb-4">
+                    <h1 className="heading text-xl text-text-primary">{challenge.title}</h1>
+                    <span className={`text-xs font-mono px-2.5 py-1 rounded-md border ${
+                        challenge.difficulty === 'EASY' ? 'text-status-success border-status-success/20 bg-status-success/10' :
+                        challenge.difficulty === 'MEDIUM' ? 'text-status-warning border-status-warning/20 bg-status-warning/10' :
+                        challenge.difficulty === 'HARD' ? 'text-status-danger border-status-danger/20 bg-status-danger/10' :
+                        'text-accent-copper border-accent-copper/20 bg-accent-copper/10'
+                    }`}>
+                        {challenge.difficulty}
+                    </span>
+                </div>
+
+                <div className="text-sm text-text-muted/80 leading-relaxed mb-6 whitespace-pre-wrap font-sans">
+                    {challenge.description}
+                </div>
+
+                {challenge.testCases && challenge.testCases.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="text-sm font-semibold text-text-primary mb-3 font-mono">
+                            Example
+                        </h3>
+                        <div className="bg-deep-surface border border-border rounded-lg p-4 space-y-3">
+                            <div>
+                                <p className="text-xs text-text-muted font-mono mb-1">Input:</p>
+                                <pre className="text-sm text-status-success font-mono">
+                                    {JSON.stringify(challenge.testCases[0].input, null, 2)}
+                                </pre>
+                            </div>
+                            <div>
+                                <p className="text-xs text-text-muted font-mono mb-1">Output:</p>
+                                <pre className="text-sm text-status-success font-mono">
+                                    {JSON.stringify(challenge.testCases[0].expectedOutput, null, 2)}
+                                </pre>
+                            </div>
                         </div>
                     </div>
+                )}
 
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-white mb-2">Example</h3>
-                        {challenge.testCases && challenge.testCases.length > 0 && (
-                            <div className="bg-gray-900 p-4 rounded-md">
-                                <p className="text-gray-400 text-sm mb-1">Input:</p>
-                                <pre className="text-green-400 mb-2 font-mono text-sm">{JSON.stringify(challenge.testCases[0].input, null, 2)}</pre>
-                                <p className="text-gray-400 text-sm mb-1">Output:</p>
-                                <pre className="text-green-400 font-mono text-sm">{JSON.stringify(challenge.testCases[0].expectedOutput, null, 2)}</pre>
-                            </div>
-                        )}
-                    </div>
+                <div className="flex flex-wrap gap-2">
+                    {challenge.tags.map((tag) => (
+                        <span key={tag} className="tag">{tag}</span>
+                    ))}
                 </div>
             </div>
 
-            {/* Right Panel: Code Editor */}
-            <div className="w-2/3 flex flex-col bg-gray-900">
+            <div className="flex-1 flex flex-col bg-deep-surface">
                 <div className="flex-1 overflow-hidden">
                     <CodeEditor
-                        value={code}
-                        onChange={(val) => setCode(val || '')}
+                        code={code}
                         language={language}
-                        // @ts-ignore
+                        onChange={(val) => setCode(val || '')}
+                        showHeader
                         onLanguageChange={setLanguage}
-                        theme="vs-dark"
+                        height="100%"
                     />
                 </div>
 
-                {/* Bottom Panel: Actions & Results */}
-                <div className="bg-gray-800 border-t border-gray-700 p-4">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
+                <div className="border-t border-border p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 text-sm">
                             {result ? (
-                                <div className={`text-sm font-bold ${result.submission.status === 'ACCEPTED' ? 'text-green-500' : 'text-red-500'}`}>
-                                    Status: {result.submission.status}
-                                    {result.submission.totalTests && (
-                                        <span className="ml-2 text-gray-400 font-normal">
-                                            ({result.submission.testsPassed}/{result.submission.totalTests} tests passed)
+                                <div className={`flex items-center gap-2 font-medium ${isAccepted ? 'text-status-success' : 'text-status-danger'}`}>
+                                    {isAccepted ? <FiCheck className="w-4 h-4" /> : null}
+                                    {result.submission.status === 'ACCEPTED' ? 'Accepted' : result.submission.status}
+                                    {result.submission.totalTests ? (
+                                        <span className="text-text-muted font-normal font-mono">
+                                            ({result.submission.testsPassed}/{result.submission.totalTests})
                                         </span>
-                                    )}
+                                    ) : null}
                                 </div>
                             ) : runResult ? (
-                                <div className={`text-sm font-bold ${runResult.testsPassed === runResult.totalTests ? 'text-green-500' : 'text-yellow-500'}`}>
-                                    Run Results: {runResult.testsPassed}/{runResult.totalTests} passed
+                                <div className={`flex items-center gap-2 font-medium ${
+                                    runResult.testsPassed === runResult.totalTests ? 'text-status-success' : 'text-status-warning'
+                                }`}>
+                                    {runResult.testsPassed}/{runResult.totalTests} passed
                                 </div>
                             ) : null}
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2">
                             <button
                                 onClick={handleRun}
                                 disabled={running || submitting}
-                                className={`px-4 py-2 rounded font-medium transition-colors border border-gray-600 ${running
-                                    ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                                    : 'bg-gray-700 hover:bg-gray-600 text-white'
-                                    }`}
+                                className="btn btn-ghost"
                             >
-                                {running ? 'Running...' : 'Run Code'}
+                                <FiPlay className="w-4 h-4" />
+                                {running ? 'Running…' : 'Run'}
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting || running}
-                                className={`px-6 py-2 rounded font-medium transition-colors ${submitting
-                                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                    : 'bg-green-600 hover:bg-green-700 text-white'
-                                    }`}
+                                className="btn btn-primary"
                             >
-                                {submitting ? 'Running...' : 'Submit Solution'}
+                                {submitting ? 'Running…' : 'Submit'}
                             </button>
                         </div>
                     </div>
 
-                    {((result && result.submission.feedback) || runResult) && (
-                        <div className="mt-4 bg-black bg-opacity-30 p-2 rounded text-sm text-gray-300 max-h-32 overflow-y-auto font-mono">
+                    {(result?.submission?.feedback || runResult) && (
+                        <div className="mt-4 bg-deep-base border border-border rounded-lg p-4 text-sm font-mono max-h-40 overflow-y-auto">
                             {(() => {
-                                const feedback = result ? result.submission.feedback : runResult.results;
-                                const safeFeedback = Array.isArray(feedback) ? feedback : [];
-
-                                return safeFeedback.map((res: any, idx: number) => (
-                                    <div key={idx} className={res.passed ? 'text-green-400' : 'text-red-400'}>
-                                        Test Case {idx + 1}: {res.passed ? 'PASSED' : (
+                                const feedback = result ? result.submission.feedback : runResult?.results;
+                                const items = Array.isArray(feedback) ? feedback : [];
+                                return items.map((res: any, idx: number) => (
+                                    <div key={idx} className={res.passed ? 'text-status-success' : 'text-status-danger'}>
+                                        <span className="text-text-muted">#{idx + 1}</span>{' '}
+                                        {res.passed ? 'PASSED' : (
                                             <span>
                                                 FAILED
-                                                {res.error ? ` (${res.error})` : (
-                                                    res.output !== undefined && challenge?.testCases?.[idx] ?
-                                                        ` (Expected: ${JSON.stringify(challenge.testCases[idx].expectedOutput)}, Actual: ${JSON.stringify(res.output)})`
-                                                        : ' (Output mismatch)'
-                                                )}
+                                                {res.error ? ` — ${res.error}` : ''}
                                             </span>
                                         )}
                                     </div>

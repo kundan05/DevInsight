@@ -1,5 +1,5 @@
 import api from './api';
-import { User, LoginCredentials, RegisterCredentials } from '../types';
+import { LoginCredentials, RegisterCredentials } from '../types';
 
 export const login = async (credentials: LoginCredentials) => {
     const response = await api.post('/auth/login', credentials);
@@ -12,8 +12,11 @@ export const register = async (credentials: RegisterCredentials) => {
 };
 
 export const logout = async () => {
-    await api.post('/auth/logout');
-    localStorage.removeItem('token');
+    try {
+        await api.post('/auth/logout');
+    } finally {
+        localStorage.removeItem('token');
+    }
 };
 
 export const getCurrentUser = async () => {

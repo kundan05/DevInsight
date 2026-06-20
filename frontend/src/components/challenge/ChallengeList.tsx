@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Challenge } from '../../types';
 import { Link } from 'react-router-dom';
+import { FiZap } from 'react-icons/fi';
+
+const DIFFICULTY_COLORS: Record<string, string> = {
+    EASY: 'text-status-success',
+    MEDIUM: 'text-status-warning',
+    HARD: 'text-status-danger',
+    EXPERT: 'text-accent-copper',
+};
 
 const ChallengeList: React.FC = () => {
     const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -17,7 +25,6 @@ const ChallengeList: React.FC = () => {
             setLoading(true);
             const params: any = {};
             if (difficulty) params.difficulty = difficulty;
-
             const response = await api.get('/challenges', { params });
             setChallenges(response.data.data);
         } catch (error) {
@@ -27,24 +34,21 @@ const ChallengeList: React.FC = () => {
         }
     };
 
-    const getDifficultyColor = (diff: string) => {
-        switch (diff) {
-            case 'EASY': return 'text-green-500';
-            case 'MEDIUM': return 'text-yellow-500';
-            case 'HARD': return 'text-red-500';
-            case 'EXPERT': return 'text-purple-500';
-            default: return 'text-gray-500';
-        }
-    };
-
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Coding Challenges</h1>
+        <div className="animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="heading text-2xl sm:text-3xl text-text-primary mb-1">
+                        Challenges
+                    </h1>
+                    <p className="text-sm text-text-muted">
+                        Solve problems, earn points, level up.
+                    </p>
+                </div>
                 <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value)}
-                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded p-2 border border-gray-300 dark:border-gray-700"
+                    className="input select w-full sm:w-auto"
                 >
                     <option value="">All Difficulties</option>
                     <option value="EASY">Easy</option>
@@ -55,40 +59,55 @@ const ChallengeList: React.FC = () => {
             </div>
 
             {loading ? (
-                <div className="text-gray-900 dark:text-white">Loading...</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="card p-6">
+                            <div className="h-4 bg-deep-elevated rounded w-2/3 mb-4 animate-pulse" />
+                            <div className="h-3 bg-deep-elevated rounded w-full mb-2 animate-pulse" />
+                            <div className="h-3 bg-deep-elevated rounded w-1/2 animate-pulse" />
+                        </div>
+                    ))}
+                </div>
             ) : challenges.length === 0 ? (
-                <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-xl font-medium text-gray-900 dark:text-white">No challenges found</h3>
-                    <p className="mt-2 text-gray-500 dark:text-gray-400">Try adjusting your filters or come back later.</p>
+                <div className="card p-12 text-center">
+                    <div className="w-12 h-12 rounded-full bg-deep-elevated border border-border flex items-center justify-center mx-auto mb-4">
+                        <FiZap className="w-5 h-5 text-text-muted" />
+                    </div>
+                    <p className="text-text-muted mb-1">No challenges found</p>
+                    <p className="text-sm text-text-muted/60">Try adjusting your filters.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {challenges.map(challenge => (
-                        <Link to={`/challenges/${challenge.id}`} key={challenge.id} className="block group">
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                        {challenge.title}
-                                    </h3>
-                                    <span className={`text-sm font-medium ${getDifficultyColor(challenge.difficulty)}`}>
-                                        {challenge.difficulty}
-                                    </span>
-                                </div>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                                    {(challenge.description || '').replace(/[#*`]/g, '') /* Simple markdown strip */}
-                                </p>
-                                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
-                                    <span>{challenge.points} Points</span>
-                                    <span>{challenge._count?.submissions || 0} Submissions</span>
-                                </div>
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                    {challenge.tags.map(tag => (
-                                        <span key={tag} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full border border-gray-200 dark:border-gray-600">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {challenges.map((challenge) => (
+                        <Link
+                            key={challenge.id}
+                            to={`/challenges/${challenge.id}`}
+                            className="card p-6 flex flex-col hover:border-accent-copper/30 transition-all group"
+                        >
+                            <div className="flex items-start justify-between mb-3">
+                                <h3 className="font-semibold text-text-primary group-hover:text-accent-copper transition-colors">
+                                    {challenge.title}
+                                </h3>
+                                <span className={`text-xs font-mono ${DIFFICULTY_COLORS[challenge.difficulty] || 'text-text-muted'}`}>
+                                    {challenge.difficulty}
+                                </span>
+                            </div>
+                            <p className="text-sm text-text-muted/70 mb-4 line-clamp-2 flex-1">
+                                {(challenge.description || '').replace(/[#*`]/g, '')}
+                            </p>
+                            <div className="flex items-center justify-between pt-4 border-t border-border text-xs text-text-muted font-mono">
+                                <span>{challenge.points} pts</span>
+                                <span>{challenge._count?.submissions || 0} submissions</span>
+                            </div>
+                            {challenge.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-4">
+                                    {challenge.tags.slice(0, 3).map((tag) => (
+                                        <span key={tag} className="tag">
                                             {tag}
                                         </span>
                                     ))}
                                 </div>
-                            </div>
+                            )}
                         </Link>
                     ))}
                 </div>

@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { FaHeart, FaComment, FaEye } from 'react-icons/fa';
+import { FiHeart, FiMessageSquare, FiPlus, FiCode } from 'react-icons/fi';
 
 interface Snippet {
     id: string;
     title: string;
     description: string;
     language: string;
-    author: {
-        username: string;
-        avatar: string;
-    };
-    _count: {
-        likes: number;
-        comments: number;
-    };
+    author: { username: string; avatar: string };
+    _count: { likes: number; comments: number };
     tags: string[];
     createdAt: string;
 }
+
+const LANG_COLORS: Record<string, string> = {
+    javascript: 'text-status-warning',
+    typescript: 'text-accent-teal',
+    python: 'text-accent-copper',
+    java: 'text-status-danger',
+    cpp: 'text-accent-teal',
+    html: 'text-status-warning',
+    css: 'text-accent-copper',
+};
 
 const SnippetList: React.FC = () => {
     const [snippets, setSnippets] = useState<Snippet[]>([]);
@@ -38,58 +42,102 @@ const SnippetList: React.FC = () => {
         fetchSnippets();
     }, []);
 
-    if (loading) return <div>Loading snippets...</div>;
+    if (loading) {
+        return (
+            <div className="animate-fade-in flex items-center justify-center min-h-[50vh]">
+                <div className="w-8 h-8 border-2 border-accent-copper border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Discover Snippets</h1>
-                <Link to="/snippets/create" className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
-                    Create Snippet
+        <div className="animate-fade-in">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="heading text-2xl sm:text-3xl text-text-primary mb-1">
+                        Snippets
+                    </h1>
+                    <p className="text-sm text-text-muted">
+                        Discover and share code with the community.
+                    </p>
+                </div>
+                <Link to="/snippets/create" className="btn btn-primary">
+                    <FiPlus className="w-4 h-4" />
+                    New Snippet
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {snippets.map((snippet) => (
-                    <Link key={snippet.id} to={`/snippets/${snippet.id}`} className="block group">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700 h-full flex flex-col">
-                            <div className="p-6 flex-1">
-                                <div className="flex justify-between items-start mb-4">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                        {snippet.language}
-                                    </span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {new Date(snippet.createdAt).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 mb-2 line-clamp-1">
-                                    {snippet.title}
-                                </h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                                    {snippet.description}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    {snippet.tags.slice(0, 3).map(tag => (
-                                        <span key={tag} className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                            #{tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="bg-gray-50 dark:bg-gray-700 px-6 py-3 flex items-center justify-between">
-                                <div className="flex items-center space-x-2">
-                                    <img className="h-6 w-6 rounded-full" src={snippet.author.avatar || `https://ui-avatars.com/api/?name=${snippet.author.username}`} alt="" />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{snippet.author.username}</span>
-                                </div>
-                                <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                                    <span className="flex items-center"><FaHeart className="mr-1" /> {snippet._count.likes}</span>
-                                    <span className="flex items-center"><FaComment className="mr-1" /> {snippet._count.comments}</span>
-                                </div>
-                            </div>
-                        </div>
+            {snippets.length === 0 ? (
+                <div className="card p-12 text-center">
+                    <div className="w-12 h-12 rounded-full bg-deep-elevated border border-border flex items-center justify-center mx-auto mb-4">
+                        <FiCode className="w-5 h-5 text-text-muted" />
+                    </div>
+                    <p className="text-text-muted mb-1">No snippets yet</p>
+                    <p className="text-sm text-text-muted/60 mb-6">
+                        Be the first to share something useful.
+                    </p>
+                    <Link to="/snippets/create" className="btn btn-primary">
+                        Create Snippet
                     </Link>
-                ))}
-            </div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {snippets.map((snippet) => (
+                        <Link
+                            key={snippet.id}
+                            to={`/snippets/${snippet.id}`}
+                            className="card p-6 flex flex-col hover:border-accent-copper/30 transition-all group"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <span className={`text-xs font-mono ${LANG_COLORS[snippet.language] || 'text-text-muted'}`}>
+                                    {snippet.language}
+                                </span>
+                                <span className="text-xs text-text-muted font-mono">
+                                    {new Date(snippet.createdAt).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                    })}
+                                </span>
+                            </div>
+                            <h3 className="font-semibold text-text-primary mb-2 group-hover:text-accent-copper transition-colors">
+                                {snippet.title}
+                            </h3>
+                            <p className="text-sm text-text-muted/70 mb-4 line-clamp-2 flex-1">
+                                {snippet.description}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                                {snippet.tags.slice(0, 3).map((tag) => (
+                                    <span key={tag} className="tag">
+                                        #{tag}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded-full bg-deep-elevated border border-border flex items-center justify-center overflow-hidden">
+                                        {snippet.author.avatar ? (
+                                            <img src={snippet.author.avatar} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-[8px] text-text-muted font-mono">
+                                                {snippet.author.username.charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-text-muted">{snippet.author.username}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-text-muted">
+                                    <span className="flex items-center gap-1">
+                                        <FiHeart className="w-3 h-3" /> {snippet._count.likes}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <FiMessageSquare className="w-3 h-3" /> {snippet._count.comments}
+                                    </span>
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

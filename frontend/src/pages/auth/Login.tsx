@@ -4,8 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { login, clearError } from '../../features/auth/authSlice';
 import { AppDispatch, RootState } from '../../store';
 import { toast } from 'react-hot-toast';
-import OrganicInput from '../../components/common/OrganicInput';
-import OrganicButton from '../../components/common/OrganicButton';
+import { FiTerminal, FiCode } from 'react-icons/fi';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -31,54 +30,60 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
-                    Sign in to your account
-                </h2>
-            </div>
-
-            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                <form className="space-y-2" onSubmit={handleSubmit}>
-                    <OrganicInput
-                        label="Email address"
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-
-                    <OrganicInput
-                        label="Password"
-                        id="password"
-                        name="password"
-                        type="password"
-                        autoComplete="current-password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    <div className="pt-4">
-                        <OrganicButton
-                            type="submit"
-                            disabled={loading}
-                            variant="primary"
-                            shape="blob"
-                            className="w-full flex justify-center py-3"
-                        >
-                            {loading ? 'Signing in...' : 'Sign in'}
-                        </OrganicButton>
+        <div className="min-h-[80vh] flex items-center justify-center">
+            <div className="w-full max-w-sm">
+                <div className="text-center mb-10">
+                    <div className="w-12 h-12 rounded-xl bg-accent-copper/10 border border-accent-copper/20 flex items-center justify-center mx-auto mb-4">
+                        <FiTerminal className="w-6 h-6 text-accent-copper" />
                     </div>
+                    <h1 className="heading text-2xl text-text-primary mb-2">Sign in</h1>
+                    <p className="text-sm text-text-muted">Welcome back to DevInsight</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="space-y-1.5">
+                        <label className="block text-sm text-text-muted font-medium">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="input"
+                            placeholder="you@example.com"
+                            autoComplete="email"
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="block text-sm text-text-muted font-medium">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="input"
+                            placeholder="Enter your password"
+                            autoComplete="current-password"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn btn-primary w-full"
+                    >
+                        {loading ? 'Signing in…' : 'Sign in'}
+                    </button>
                 </form>
 
-                <p className="mt-10 text-center text-sm text-gray-500">
-                    Not a member?{' '}
-                    <Link to="/register" className="font-semibold leading-6 text-primary-600 hover:text-primary-500">
-                        Start a 14 day free trial
+                <p className="mt-8 text-center text-sm text-text-muted">
+                    Don&apos;t have an account?{' '}
+                    <Link to="/register" className="link font-medium">
+                        Create one
                     </Link>
                 </p>
             </div>

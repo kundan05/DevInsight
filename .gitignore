@@ -11,3 +11,7 @@ coverage/
 .prisma/
 .vscode/
 .idea/
+
+# Temp/Agent files
+you are DevInsight Architect.txt
+.opencode/

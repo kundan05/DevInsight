@@ -1,66 +1,35 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 
-interface OrganicButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'ghost';
-    shape?: 'pill' | 'blob' | 'sharp';
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'primary' | 'ghost' | 'danger';
+    size?: 'sm' | 'md' | 'lg';
     children: React.ReactNode;
 }
 
-const OrganicButton: React.FC<OrganicButtonProps> = ({
+const Button: React.FC<ButtonProps> = ({
     variant = 'primary',
-    shape = 'pill',
+    size = 'md',
     children,
     className = '',
     ...props
 }) => {
-    const btnRef = useRef<HTMLButtonElement>(null);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (!btnRef.current) return;
-        const rect = btnRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        // Magnetic effect strength
-        setPosition({ x: x * 0.2, y: y * 0.2 });
+    const sizeClasses = {
+        sm: 'px-3 py-1.5 text-xs',
+        md: 'px-5 py-2.5 text-sm',
+        lg: 'px-7 py-3 text-base',
     };
 
-    const handleMouseLeave = () => {
-        setPosition({ x: 0, y: 0 });
-    };
-
-    const baseStyles = "relative px-8 py-3 font-semibold transition-all duration-300 ease-out transform active:scale-95 group overflow-hidden z-10";
-
-    const variants = {
-        primary: "bg-organic-charcoal text-organic-sand hover:bg-black",
-        secondary: "bg-organic-moss text-white hover:bg-green-900",
-        ghost: "bg-transparent text-organic-charcoal border-2 border-organic-charcoal hover:bg-organic-charcoal hover:text-white"
-    };
-
-    const shapes = {
-        pill: "rounded-full",
-        blob: "rounded-organic-2",
-        sharp: "rounded-none"
-    };
+    const variantClass = variant === 'primary' ? 'btn-primary' :
+                         variant === 'danger' ? 'btn-danger' : 'btn-ghost';
 
     return (
         <button
-            ref={btnRef}
-            className={`${baseStyles} ${variants[variant]} ${shapes[shape]} ${className}`}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{
-                transform: `translate(${position.x}px, ${position.y}px)`,
-            }}
+            className={`btn ${variantClass} ${sizeClasses[size]} ${className}`}
             {...props}
         >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-                {children}
-            </span>
-            {/* Hover spill effect */}
-            <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/10 ease-in-out" />
+            {children}
         </button>
     );
 };
 
-export default OrganicButton;
+export default Button;

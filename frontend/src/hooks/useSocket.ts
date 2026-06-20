@@ -15,10 +15,8 @@ export const useSocket = () => {
 
         return () => {
             if (connected.current) {
-                // Typically we might not want to disconnect on every unmount if we want persistent connection
-                // But for now, we can manage it at the App level or specific features
-                // socketService.disconnect(); 
-                // connected.current = false;
+                socketService.disconnect();
+                connected.current = false;
             }
         };
     }, [isAuthenticated, token]);

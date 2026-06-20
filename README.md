@@ -26,29 +26,6 @@
 -   **Real-time**: Socket.io Server
 -   **Authentication**: JWT & Cookies
 
-##  Architecture
-
-```mermaid
-graph TD
-    Client[React Client] <-->|HTTP/REST| API[Express API]
-    Client <-->|WebSocket| Socket[Socket.io Service]
-    API -->|Query| DB[(SQLite/Postgres)]
-    API -->|Cache| Redis[(Redis)]
-    Socket -->|Pub/Sub| Redis
-```
-
-## Screenshots
-
-| Login Page | Dashboard |
-|:---:|:---:|
-| ![Login Page](./assets/Screenshot%20from%202025-12-29%2015-37-28.png) | ![Dashboard](./assets/Screenshot%20from%202025-12-29%2015-38-02.png) |
-
-| Challenges List | Challenge Detail |
-|:---:|:---:|
-| ![Challenges](./assets/Screenshot%20from%202025-12-29%2015-38-51.png) | ![Challenge Detail](./assets/Screenshot%20from%202025-12-29%2015-40-06.png) |
-
-##  Getting Started
-
 ### Prerequisites
 -   **Node.js** (v18+)
 -   **npm**
